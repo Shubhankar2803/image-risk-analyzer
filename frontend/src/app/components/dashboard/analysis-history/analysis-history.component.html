@@ -1,0 +1,38 @@
+<div class="history-toggle-container" *ngIf="!showHistory">
+  <button (click)="onToggleHistory()" class="btn btn-toggle-history">
+    View Analysis History ({{ analyses.length }})
+  </button>
+</div>
+
+<section class="results-section" #resultsSection *ngIf="showHistory">
+  <div class="section-header">
+    <div class="header-with-toggle">
+      <h2>Analysis History</h2>
+      <button (click)="onToggleHistory()" class="toggle-btn" title="Hide history">
+        ✕
+      </button>
+    </div>
+    <p class="section-desc">Your previous image analyses</p>
+  </div>
+
+  <div *ngIf="loading" class="loading-state">
+    <div class="loading-spinner-large">
+      <span class="spinner"></span>
+    </div>
+    <p>Loading your analyses...</p>
+  </div>
+
+  <div *ngIf="!loading && (!analyses || analyses.length === 0)" class="empty-state">
+    <div class="empty-icon">📭</div>
+    <h3>No analyses yet</h3>
+    <p>Upload an image to get started</p>
+  </div>
+
+  <div class="analysis-grid" *ngIf="!loading && analyses && analyses.length > 0">
+    <app-analysis-card 
+      *ngFor="let analysis of analyses; trackBy: trackByAnalysisId"
+      [analysis]="analysis"
+      (deleteRequested)="deleteAnalysis($event)">
+    </app-analysis-card>
+  </div>
+</section>

@@ -1,0 +1,15 @@
+<nav class="navbar">
+  <div class="nav-container">
+    <div class="nav-brand">
+      <span class="brand-icon">🖼️</span>
+      <h1>AI Image Analyzer</h1>
+    </div>
+    <div class="user-menu">
+      <div class="user-greeting">
+        <span class="greeting-icon">👋</span>
+        <span>Welcome, <strong>{{ currentUser?.fullName }}</strong></span>
+      </div>
+      <button (click)="logout()" class="logout-btn">Logout</button>
+    </div>
+  </div>
+</nav>

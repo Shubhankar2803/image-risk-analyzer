@@ -1,0 +1,90 @@
+# Backend (.NET)
+backend/**/**/bin/
+backend/**/**/obj/
+backend/**/**/[Dd]ebug/
+backend/**/**/[Rr]elease/
+backend/**/**/[Oo]bj/
+backend/**/**/[Bb]in/
+backend/**/**/packages/
+backend/**/**/NuGet.Org.RepositorySync/
+backend/**/*.user
+backend/**/*.suo
+backend/**/*.csproj.user
+backend/**/*.sln.DotSettings.user
+backend/**/.vs/
+backend/**/.vscode/
+backend/**/*.VC.db
+backend/**/*.VC.VC.opendb
+backend/**/*.ncrunchproject
+backend/**/*.ncrunchsolution
+backend/**/*.pipe
+backend/**/Migrations/
+
+# Database files
+*.mdf
+*.ldf
+*.ndf
+
+# Frontend (Angular)
+frontend/node_modules/
+frontend/dist/
+frontend/.angular/cache/
+frontend/.angular/
+frontend/out-tsc/
+frontend/*.log
+frontend/npm-debug.log*
+frontend/yarn-debug.log*
+frontend/yarn-error.log*
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*.sublime-workspace
+*.sublime-project
+*.iml
+
+# Environment & Sensitive Files
+.env
+.env.local
+appsettings.Development.json
+appsettings.*.json
+!appsettings.json
+.env.*.local
+backend/**/.env
+frontend/.env
+
+# OS
+.DS_Store
+Thumbs.db
+.env
+.env.local
+.env.*.local
+
+# Application Uploads
+uploads/
+wwwroot/uploads/
+
+# Logs
+logs/
+*.log
+
+# Build outputs
+build/
+dist/
+
+# Dependencies
+node_modules/
+packages/
+
+# Environment-specific files
+appsettings.Production.json
+appsettings.*.json
+!appsettings.json
+!appsettings.Development.json
+
+# Local user preferences
+*.DotSettings.user
+appsettings.Development.json
+appsettings.Production.json

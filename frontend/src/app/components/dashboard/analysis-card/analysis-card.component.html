@@ -1,0 +1,45 @@
+<div class="analysis-card">
+  <div class="card-header">
+    <div class="file-info-compact">
+      <span class="file-icon">🖼️</span>
+      <span class="file-name-compact">{{ analysis.fileName }}</span>
+    </div>
+    <button (click)="deleteAnalysis()" class="btn-delete" title="Delete">🗑️</button>
+  </div>
+  <div class="card-body">
+    <div class="stats-grid">
+      <div class="stat-item">
+        <span class="stat-label">Risk Score</span>
+        <span class="stat-value" [class.high]="analysis.riskScore > 70">{{ analysis.riskScore }}/100</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-label">Confidence</span>
+        <span class="stat-value">{{ analysis.confidenceScore }}%</span>
+      </div>
+    </div>
+    <div class="info-item">
+      <span class="label">Classification:</span>
+      <span class="value">{{ analysis.classification }}</span>
+    </div>
+    <div class="info-item">
+      <span class="label">Details:</span>
+      <span class="value">{{ analysis.analysisDetails }}</span>
+    </div>
+    
+    <div class="categories-section" *ngIf="analysis.categories">
+      <div class="categories-title">Risk Categories:</div>
+      <div class="categories-list">
+        <div class="category-item" *ngFor="let category of parseCategories(analysis.categories)" [class]="'risk-' + category.riskLevel.toLowerCase()">
+          <div class="category-name">{{ category.name }}</div>
+          <div class="category-risk" [class]="'level-' + category.riskLevel.toLowerCase()">{{ category.riskLevel }}</div>
+          <div class="category-evidence">{{ category.evidence }}</div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="info-item timestamp">
+      <span class="label">📅</span>
+      <span class="value">{{ analysis.analyzedAt | date: 'short' }}</span>
+    </div>
+  </div>
+</div>
