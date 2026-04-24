@@ -5,29 +5,32 @@
 }
 
 .btn-toggle-history {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
+  background: #000000;
+  color: #FFFFFF;
   padding: 14px 32px;
-  border: none;
-  border-radius: 8px;
+  border: 3px solid #000000;
+  border-radius: 0px;
   font-size: 16px;
-  font-weight: 600;
+  font-weight: 700;
   cursor: pointer;
   transition: all 0.3s ease;
-  box-shadow: 0 4px 16px rgba(102, 126, 234, 0.3);
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-family: 'Courier New', monospace;
+  text-transform: uppercase;
+  letter-spacing: 1px;
 }
 
 .btn-toggle-history:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 24px rgba(102, 126, 234, 0.4);
+  background: #FFD700;
+  color: #000000;
+  transform: translate(2px, 2px);
+  box-shadow: -2px -2px 0px #000000;
 }
 
 .results-section {
-  background: white;
-  border-radius: 16px;
+  background: #FFFFFF;
+  border-radius: 0px;
   padding: 40px;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+  border: 3px solid #000000;
   margin-bottom: 40px;
   min-height: 200px;
   animation: slideIn 0.3s ease-out;
@@ -39,16 +42,20 @@
 
 .section-header h2 {
   margin: 0 0 8px;
-  color: white;
+  color: #000000;
   font-size: 28px;
   font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  border-bottom: 4px solid #FFD700;
+  padding-bottom: 8px;
 }
 
 .section-desc {
   margin: 0;
-  color: rgba(255, 255, 255, 0.8);
+  color: #666666;
   font-size: 14px;
-  font-weight: 500;
+  font-weight: 600;
 }
 
 .header-with-toggle {
@@ -63,11 +70,11 @@
 }
 
 .toggle-btn {
-  background: rgba(255, 255, 255, 0.2);
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  color: #667eea;
+  background: #FFFFFF;
+  border: 2px solid #000000;
+  color: #000000;
   padding: 8px 12px;
-  border-radius: 6px;
+  border-radius: 0px;
   font-size: 18px;
   cursor: pointer;
   transition: all 0.3s ease;
@@ -76,12 +83,12 @@
   justify-content: center;
   min-width: 36px;
   height: 36px;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-family: 'Courier New', monospace;
 }
 
 .toggle-btn:hover {
-  background: rgba(255, 255, 255, 0.3);
-  border-color: rgba(255, 255, 255, 0.5);
+  background: #FFD700;
+  border-color: #000000;
 }
 
 .loading-state {
@@ -99,9 +106,9 @@
   display: inline-block;
   width: 40px;
   height: 40px;
-  border: 4px solid rgba(102, 126, 234, 0.2);
-  border-top-color: #667eea;
-  border-radius: 50%;
+  border: 4px solid #e5e7eb;
+  border-top-color: #000000;
+  border-radius: 0px;
   animation: spin 0.8s linear infinite;
 }
 
@@ -122,8 +129,10 @@
 
 .empty-state h3 {
   margin: 16px 0 8px;
-  color: #6b7280;
+  color: #000000;
   font-size: 20px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
 }
 
 .empty-state p {

@@ -1,10 +1,10 @@
 <div class="analysis-card">
   <div class="card-header">
     <div class="file-info-compact">
-      <span class="file-icon">🖼️</span>
+      <span class="file-icon">[IMG]</span>
       <span class="file-name-compact">{{ analysis.fileName }}</span>
     </div>
-    <button (click)="deleteAnalysis()" class="btn-delete" title="Delete">🗑️</button>
+    <button (click)="deleteAnalysis()" class="btn-delete" title="Delete">×</button>
   </div>
   <div class="card-body">
     <div class="stats-grid">
@@ -38,7 +38,7 @@
     </div>
     
     <div class="info-item timestamp">
-      <span class="label">📅</span>
+      <span class="label">[DATE]</span>
       <span class="value">{{ analysis.analyzedAt | date: 'short' }}</span>
     </div>
   </div>

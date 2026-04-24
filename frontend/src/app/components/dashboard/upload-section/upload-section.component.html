@@ -18,7 +18,7 @@
     />
     
     <div *ngIf="!selectedFile" class="upload-placeholder">
-      <div class="upload-icon">📁</div>
+      <div class="upload-icon">[ ]</div>
       <p class="upload-main">Click to select or drag & drop</p>
       <p class="upload-hint">Supported: JPG, PNG, GIF, WebP (Max 10MB)</p>
     </div>
@@ -48,7 +48,7 @@
 
   <div class="message-group">
     <p class="error-message" *ngIf="uploadError">
-      <span class="icon">⚠️</span> {{ uploadError }}
+      <span class="icon">!</span> {{ uploadError }}
     </p>
     <p class="success-message" *ngIf="uploadSuccess">
       <span class="icon">✓</span> {{ uploadSuccess }}

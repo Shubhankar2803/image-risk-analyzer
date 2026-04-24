@@ -3,7 +3,7 @@
     <div class="login-card">
       <div class="card-header">
         <div class="logo">
-          <span class="logo-icon">🖼️</span>
+          <span class="logo-icon"></span>
         </div>
         <h1>AI Image Analyzer</h1>
         <p class="subtitle">Intelligent Image Risk Detection</p>
@@ -13,7 +13,7 @@
         <div class="form-group">
           <label for="email">Email Address</label>
           <div class="input-wrapper">
-            <span class="input-icon">✉️</span>
+            <span class="input-icon">@</span>
             <input 
               id="email"
               type="email" 
@@ -28,7 +28,7 @@
         <div class="form-group">
           <label for="password">Password</label>
           <div class="input-wrapper">
-            <span class="input-icon">🔒</span>
+            <span class="input-icon">*</span>
             <input 
               id="password"
               type="password" 
@@ -49,7 +49,7 @@
       </form>
 
       <p class="error-message" *ngIf="error">
-        <span class="error-icon">⚠️</span> {{ error }}
+        <span class="error-icon">!</span> {{ error }}
       </p>
 
       <div class="divider"></div>
