@@ -20,6 +20,16 @@ backend/**/*.ncrunchsolution
 backend/**/*.pipe
 backend/**/Migrations/
 
+# Configuration & Secrets 
+backend/**/appsettings.json
+backend/**/appsettings.Development.json
+backend/**/appsettings.Production.json
+!backend/**/appsettings.*.example
+backend/**/.env
+backend/**/.env.local
+frontend/.env
+frontend/.env.local
+
 # Database files
 *.mdf
 *.ldf
@@ -45,15 +55,11 @@ frontend/yarn-error.log*
 *.sublime-project
 *.iml
 
-# Environment & Sensitive Files
-.env
-.env.local
-appsettings.Development.json
-appsettings.*.json
-!appsettings.json
-.env.*.local
-backend/**/.env
-frontend/.env
+# ALLOW Example Files (Important! - These ARE pushed)
+!backend/**/appsettings.json.example
+!backend/**/appsettings.Development.json.example
+!backend/**/appsettings.Production.json.example
+!frontend/.env.example
 
 # OS
 .DS_Store
@@ -78,13 +84,5 @@ dist/
 node_modules/
 packages/
 
-# Environment-specific files
-appsettings.Production.json
-appsettings.*.json
-!appsettings.json
-!appsettings.Development.json
-
 # Local user preferences
 *.DotSettings.user
-appsettings.Development.json
-appsettings.Production.json
