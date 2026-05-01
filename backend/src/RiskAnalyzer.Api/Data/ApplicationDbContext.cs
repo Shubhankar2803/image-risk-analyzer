@@ -26,6 +26,9 @@ public class ApplicationDbContext : DbContext
     /// <summary>DbSet for AnalysisTags table</summary>
     public DbSet<AnalysisTag> AnalysisTags { get; set; } = null!;
     
+    /// <summary>DbSet for RiskCategories table</summary>
+    public DbSet<RiskCategory> RiskCategories { get; set; } = null!;
+    
     /// <summary>
     /// Configure entity relationships and constraints
     /// </summary>
@@ -126,6 +129,34 @@ public class ApplicationDbContext : DbContext
             
             // Index for performance
             entity.HasIndex(e => e.ImageAnalysisId);
+        });
+
+        // RiskCategory configuration
+        modelBuilder.Entity<RiskCategory>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            
+            entity.Property(e => e.CategoryName)
+                .IsRequired()
+                .HasMaxLength(100);
+            
+            entity.Property(e => e.Description)
+                .IsRequired()
+                .HasMaxLength(500);
+            
+            entity.Property(e => e.RecommendedAction)
+                .IsRequired()
+                .HasMaxLength(50);
+            
+            entity.Property(e => e.SeverityWeight)
+                .IsRequired();
+            
+            entity.Property(e => e.ActionThreshold)
+                .IsRequired();
+            
+            // Index for quick lookup
+            entity.HasIndex(e => e.CategoryName).IsUnique();
+            entity.HasIndex(e => e.IsEnabled);
         });
     }
 }
