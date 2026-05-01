@@ -36,6 +36,9 @@ export interface ImageAnalysisResponseDto {
   classification: string;
   analysisDetails: string;
   confidenceScore: number;
+  severityWeight: number;
+  riskAction: string;
+  riskColor: string;
   analyzedAt: string;
   createdAt: string;
   tags: AnalysisTagDto[];
