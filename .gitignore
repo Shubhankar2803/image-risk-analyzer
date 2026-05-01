@@ -18,7 +18,6 @@ backend/**/*.VC.VC.opendb
 backend/**/*.ncrunchproject
 backend/**/*.ncrunchsolution
 backend/**/*.pipe
-backend/**/Migrations/
 
 # Configuration & Secrets 
 backend/**/appsettings.json
