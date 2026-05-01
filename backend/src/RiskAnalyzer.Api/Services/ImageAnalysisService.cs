@@ -1,17 +1,15 @@
-using System.Text.RegularExpressions;
-
 namespace RiskAnalyzer.Api.Services;
 
 using RiskAnalyzer.Api.Data;
 using RiskAnalyzer.Api.DTOs;
 using RiskAnalyzer.Api.Models;
 using RiskAnalyzer.Api.Config;
+using RiskAnalyzer.Api.ML;
 using Microsoft.EntityFrameworkCore;
-using System.Text.Json;
-using System.Net.Http.Headers;
 
 /// <summary>
-/// Service for handling image analysis operations
+/// Service for handling image analysis operations using ML.NET fine-tuned model
+/// with database-driven risk scoring
 /// </summary>
 public interface IImageAnalysisService
 {
@@ -25,23 +23,187 @@ public class ImageAnalysisService : IImageAnalysisService
 {
     private readonly ApplicationDbContext _context;
     private readonly ILogger<ImageAnalysisService> _logger;
-    private readonly IConfiguration _configuration;
-    private readonly IHttpClientFactory _httpClientFactory;
-    private readonly GeminiSettings _geminiSettings;
+    private readonly IMLModelService _mlModelService;
+    private readonly IRiskScoringService _riskScoringService;
 
     public ImageAnalysisService(
         ApplicationDbContext context, 
         ILogger<ImageAnalysisService> logger, 
-        IConfiguration configuration,
-        IHttpClientFactory httpClientFactory,
-        GeminiSettings geminiSettings)
+        IMLModelService mlModelService,
+        IRiskScoringService riskScoringService)
     {
         _context = context;
         _logger = logger;
-        _configuration = configuration;
-        _httpClientFactory = httpClientFactory;
-        _geminiSettings = geminiSettings;
+        _mlModelService = mlModelService;
+        _riskScoringService = riskScoringService;
     }
+
+    public async Task<ImageAnalysisResponseDto?> AnalyzeImageAsync(Guid userId, IFormFile file)
+    {
+        try
+        {
+            // Validate user exists
+            var user = await _context.Users.FindAsync(userId);
+            if (user == null)
+            {
+                _logger.LogWarning("User {UserId} not found", userId);
+                return null;
+            }
+
+            // Validate file
+            if (file == null || file.Length == 0)
+            {
+                _logger.LogWarning("Invalid file provided");
+                return null;
+            }
+
+            // Validate model is loaded
+            if (!_mlModelService.IsModelLoaded)
+            {
+                _logger.LogError("ML model not loaded");
+                return null;
+            }
+
+            // Create upload directory if doesn't exist
+            var uploadDir = Path.Combine(Directory.GetCurrentDirectory(), "uploads");
+            Directory.CreateDirectory(uploadDir);
+
+            // Generate unique filename
+            var filename = $"{Guid.NewGuid()}_{file.FileName}";
+            var filepath = Path.Combine(uploadDir, filename);
+
+            // Save file
+            using (var stream = new FileStream(filepath, FileMode.Create))
+            {
+                await file.CopyToAsync(stream);
+            }
+
+            _logger.LogInformation("Image saved: {FilePath}", filepath);
+
+            // Perform ML model inference (gets category and confidence)
+            var mlPrediction = await _mlModelService.PredictImageAsync(filepath);
+
+            // Calculate risk score using database-driven severity weights
+            var riskResult = await _riskScoringService.CalculateRiskAsync(mlPrediction.Category, mlPrediction.Confidence);
+
+            // Create analysis record with complete risk information
+            var analysis = new ImageAnalysis
+            {
+                Id = Guid.NewGuid(),
+                UserId = userId,
+                FileName = file.FileName,
+                FilePath = filepath,
+                FileSizeBytes = file.Length,
+                ContentType = file.ContentType ?? "application/octet-stream",
+                RiskScore = riskResult.FinalRiskScore,
+                Classification = riskResult.Category,
+                AnalysisDetails = $"ML.NET Analysis: Category={riskResult.Category}, Confidence={riskResult.Confidence:P0}, Action={riskResult.Action}",
+                ConfidenceScore = riskResult.Confidence,
+                SeverityWeight = riskResult.SeverityWeight,
+                RiskAction = riskResult.Action,
+                RiskColor = riskResult.RiskColor,
+                AnalyzedAt = DateTime.UtcNow,
+                CreatedAt = DateTime.UtcNow
+            };
+
+            _context.ImageAnalyses.Add(analysis);
+            await _context.SaveChangesAsync();
+
+            _logger.LogInformation(
+                "Image analysis created: {AnalysisId} | Category={Category} | Confidence={Confidence:P0} | SeverityWeight={Weight} | FinalRiskScore={RiskScore:F2} | Action={Action}",
+                analysis.Id, riskResult.Category, riskResult.Confidence, riskResult.SeverityWeight, riskResult.FinalRiskScore, riskResult.Action);
+
+            return MapToDto(analysis);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error analyzing image");
+            return null;
+        }
+    }
+
+    public async Task<List<ImageAnalysisResponseDto>> GetUserAnalysesAsync(Guid userId)
+    {
+        try
+        {
+            var analyses = await _context.ImageAnalyses
+                .Where(a => a.UserId == userId)
+                .OrderByDescending(a => a.CreatedAt)
+                .ToListAsync();
+
+            return analyses.Select(MapToDto).ToList();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error retrieving user analyses");
+            return new List<ImageAnalysisResponseDto>();
+        }
+    }
+
+    public async Task<ImageAnalysisResponseDto?> GetAnalysisByIdAsync(Guid analysisId, Guid userId)
+    {
+        try
+        {
+            var analysis = await _context.ImageAnalyses
+                .FirstOrDefaultAsync(a => a.Id == analysisId && a.UserId == userId);
+
+            return analysis != null ? MapToDto(analysis) : null;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error retrieving analysis");
+            return null;
+        }
+    }
+
+    public async Task<bool> DeleteAnalysisAsync(Guid analysisId, Guid userId)
+    {
+        try
+        {
+            var analysis = await _context.ImageAnalyses
+                .FirstOrDefaultAsync(a => a.Id == analysisId && a.UserId == userId);
+
+            if (analysis == null)
+                return false;
+
+            // Delete physical file if exists
+            if (File.Exists(analysis.FilePath))
+            {
+                File.Delete(analysis.FilePath);
+            }
+
+            _context.ImageAnalyses.Remove(analysis);
+            await _context.SaveChangesAsync();
+
+            _logger.LogInformation("Analysis deleted: {AnalysisId}", analysisId);
+            return true;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error deleting analysis");
+            return false;
+        }
+    }
+
+    private ImageAnalysisResponseDto MapToDto(ImageAnalysis analysis)
+    {
+        return new ImageAnalysisResponseDto
+        {
+            Id = analysis.Id,
+            FileName = analysis.FileName,
+            FileSizeBytes = analysis.FileSizeBytes,
+            RiskScore = analysis.RiskScore,
+            Classification = analysis.Classification,
+            AnalysisDetails = analysis.AnalysisDetails,
+            ConfidenceScore = analysis.ConfidenceScore,
+            SeverityWeight = analysis.SeverityWeight,
+            RiskAction = analysis.RiskAction,
+            RiskColor = analysis.RiskColor,
+            AnalyzedAt = analysis.AnalyzedAt,
+            Categories = analysis.Categories
+        };
+    }
+}
 
     public async Task<ImageAnalysisResponseDto?> AnalyzeImageAsync(Guid userId, IFormFile file)
     {
