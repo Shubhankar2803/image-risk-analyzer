@@ -15,6 +15,17 @@
     "Issuer": "RiskAnalyzerApi",
     "Audience": "RiskAnalyzerApp"
   },
+  "MLSettings": {
+    "ModelPath": "ml_models/image_classifier.zip",
+    "TrainingDataPath": "TrainingData",
+    "ConfidenceThreshold": 0.7,
+    "AutoBlockThreshold": 8.0,
+    "ReviewThreshold": 5.0,
+    "AllowThreshold": 5.0,
+    "TrainOnStartup": false,
+    "Epochs": 100,
+    "BatchSize": 32
+  },
   "GeminiSettings": {
     "ApiKey": "YOUR_GOOGLE_GEMINI_API_KEY_HERE",
     "ModelId": "gemini-2.5-flash",
