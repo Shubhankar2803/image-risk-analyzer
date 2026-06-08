@@ -1,16 +1,17 @@
-<div class="analysis-card">
-  <div class="card-header">
+<div class="analysis-card" [ngClass]="getRiskColorClass()">
+  <div class="card-header" [ngClass]="getRiskColorClass()">
     <div class="file-info-compact">
       <span class="file-icon">[IMG]</span>
       <span class="file-name-compact">{{ analysis.fileName }}</span>
     </div>
+    <div class="risk-badge" [ngClass]="getRiskColorClass()">{{ getRiskDisplayText() }}</div>
     <button (click)="deleteAnalysis()" class="btn-delete" title="Delete">×</button>
   </div>
   <div class="card-body">
     <div class="stats-grid">
       <div class="stat-item">
         <span class="stat-label">Risk Score</span>
-        <span class="stat-value" [class.high]="analysis.riskScore > 70">{{ analysis.riskScore }}/100</span>
+        <span class="stat-value" [ngClass]="'risk-score-' + getRiskLevel()">{{ analysis.riskScore }}/100</span>
       </div>
       <div class="stat-item">
         <span class="stat-label">Confidence</span>

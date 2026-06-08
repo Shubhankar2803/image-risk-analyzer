@@ -109,10 +109,29 @@ public class ImageAnalysisService : IImageAnalysisService
                 CreatedAt = DateTime.UtcNow
             };
 
+            // Add tags if provided
+            if (geminiAnalysis.ContainsKey("tags"))
+            {
+                var tagsList = (List<Dictionary<string, dynamic>>)geminiAnalysis["tags"];
+                foreach (var tagData in tagsList)
+                {
+                    var tag = new AnalysisTag
+                    {
+                        Id = Guid.NewGuid(),
+                        ImageAnalysisId = analysis.Id,
+                        Name = tagData.ContainsKey("name") ? tagData["name"] : "",
+                        Category = tagData.ContainsKey("category") ? tagData["category"] : "",
+                        Confidence = (int)(((decimal)tagData.GetValueOrDefault("confidence", 0m)) * 100),
+                        Severity = tagData.ContainsKey("severity") ? tagData["severity"] : "Low"
+                    };
+                    analysis.Tags.Add(tag);
+                }
+            }
+
             _context.ImageAnalyses.Add(analysis);
             await _context.SaveChangesAsync();
 
-            _logger.LogInformation("Image analysis created: {AnalysisId}", analysis.Id);
+            _logger.LogInformation("Image analysis created: {AnalysisId} with {TagCount} tags", analysis.Id, analysis.Tags.Count);
 
             return MapToDto(analysis);
         }
@@ -142,7 +161,7 @@ public class ImageAnalysisService : IImageAnalysisService
                     {
                         "parts": [
                             {
-                                "text": "Analyze image for safety risks. Respond ONLY with JSON: {\"primaryClassification\": \"Safe|Violence & Physical Harm|Harassment & Hate Speech|Sexually Explicit Content|Dangerous Activities|Sensitive Information\", \"overallRiskScore\": 0-100, \"confidenceScore\": 0-100, \"summary\": \"Brief finding\"}"
+                                "text": "Analyze this image for potential risks including Privacy & PII (financial info, ID documents, faces, addresses), Safety & Violence (violence, weapons), and Adult Content. Respond ONLY with this exact JSON structure: {\"overallRiskScore\": 0-100, \"confidenceScore\": 0-100, \"primaryClassification\": \"Safe|Medium Risk|High Risk\", \"tags\": [{\"category\": \"Privacy & PII|Safety & Violence|Adult Content\", \"name\": \"specific tag name\", \"confidence\": 0-100, \"severity\": \"High|Medium|Low\"}], \"summary\": \"Brief finding\"}"
                             },
                             {
                                 "inlineData": {
@@ -199,6 +218,28 @@ public class ImageAnalysisService : IImageAnalysisService
                     var jsonDoc = JsonDocument.Parse(responseJson);
                     var root = jsonDoc.RootElement;
 
+                    // Check if Gemini blocked the content due to safety filters
+                    if (root.TryGetProperty("candidates", out var candidates) && candidates.GetArrayLength() == 0)
+                    {
+                        _logger.LogWarning("Gemini API blocked content (empty candidates array)");
+                        throw new InvalidOperationException("CONTENT_BLOCKED: Image contains content that violates safety policies");
+                    }
+
+                    // Check for finish reason indicating content was blocked
+                    if (root.TryGetProperty("candidates", out candidates) && candidates.GetArrayLength() > 0)
+                    {
+                        var candidate = candidates[0];
+                        if (candidate.TryGetProperty("finishReason", out var finishReason))
+                        {
+                            string reason = finishReason.GetString() ?? "";
+                            if (reason.Equals("SAFETY", StringComparison.OrdinalIgnoreCase))
+                            {
+                                _logger.LogWarning("Gemini API blocked content due to safety filter");
+                                throw new InvalidOperationException("CONTENT_BLOCKED: Image contains content that violates safety policies");
+                            }
+                        }
+                    }
+
                     // Extract text from Gemini response
                     var textContent = root
                         .GetProperty("candidates")[0]
@@ -217,12 +258,32 @@ public class ImageAnalysisService : IImageAnalysisService
                         var analysisJson = JsonDocument.Parse(jsonContent);
                         var analysis = analysisJson.RootElement;
 
+                        // Parse tags array from Gemini response
+                        var tags = new List<Dictionary<string, dynamic>>();
+                        if (analysis.TryGetProperty("tags", out var tagsElement) && tagsElement.ValueKind == JsonValueKind.Array)
+                        {
+                            foreach (var tag in tagsElement.EnumerateArray())
+                            {
+                                var tagDict = new Dictionary<string, dynamic>();
+                                if (tag.TryGetProperty("category", out var category))
+                                    tagDict["category"] = category.GetString() ?? "";
+                                if (tag.TryGetProperty("name", out var name))
+                                    tagDict["name"] = name.GetString() ?? "";
+                                if (tag.TryGetProperty("confidence", out var confidence))
+                                    tagDict["confidence"] = decimal.Parse(confidence.GetRawText()) / 100m;
+                                if (tag.TryGetProperty("severity", out var severity))
+                                    tagDict["severity"] = severity.GetString() ?? "Low";
+                                tags.Add(tagDict);
+                            }
+                        }
+
                         return new Dictionary<string, dynamic>
                         {
-                            ["riskScore"] = analysis.GetProperty("overallRiskScore").GetInt32(),
+                            ["riskScore"] = decimal.Parse(analysis.GetProperty("overallRiskScore").GetRawText()) / 100m,
                             ["classification"] = analysis.GetProperty("primaryClassification").GetString() ?? "Safe",
                             ["analysisDetails"] = analysis.GetProperty("summary").GetString() ?? "Image analyzed",
-                            ["confidenceScore"] = analysis.GetProperty("confidenceScore").GetInt32()
+                            ["confidenceScore"] = decimal.Parse(analysis.GetProperty("confidenceScore").GetRawText()) / 100m,
+                            ["tags"] = tags
                         };
                     }
 
@@ -248,7 +309,12 @@ public class ImageAnalysisService : IImageAnalysisService
             
             // Return friendly error message for user
             string userMessage = "Gemini API service is temporarily unavailable. Your image has been saved and will be analyzed automatically when the service recovers.";
-            if (ex.Message.Contains("503") || ex.Message.Contains("unavailable") || ex.Message.Contains("high demand"))
+            
+            if (ex.Message.Contains("CONTENT_BLOCKED"))
+            {
+                userMessage = "The image contains adult or explicit content that cannot be analyzed. Please upload a different image.";
+            }
+            else if (ex.Message.Contains("503") || ex.Message.Contains("unavailable") || ex.Message.Contains("high demand"))
             {
                 userMessage = "Gemini API is experiencing high demand. Your image has been saved and will be analyzed automatically. Please try again in a few minutes.";
             }
@@ -264,7 +330,7 @@ public class ImageAnalysisService : IImageAnalysisService
             return new Dictionary<string, dynamic>
             {
                 ["riskScore"] = 0,
-                ["classification"] = "Pending Analysis",
+                ["classification"] = ex.Message.Contains("CONTENT_BLOCKED") ? "Blocked - Explicit Content" : "Pending Analysis",
                 ["analysisDetails"] = userMessage,
                 ["confidenceScore"] = 0
             };
@@ -361,6 +427,7 @@ public class ImageAnalysisService : IImageAnalysisService
         {
             var analyses = await _context.ImageAnalyses
                 .Where(a => a.UserId == userId)
+                .Include(a => a.Tags)
                 .OrderByDescending(a => a.CreatedAt)
                 .ToListAsync();
 
@@ -378,6 +445,7 @@ public class ImageAnalysisService : IImageAnalysisService
         try
         {
             var analysis = await _context.ImageAnalyses
+                .Include(a => a.Tags)
                 .FirstOrDefaultAsync(a => a.Id == analysisId && a.UserId == userId);
 
             return analysis != null ? MapToDto(analysis) : null;
@@ -420,16 +488,35 @@ public class ImageAnalysisService : IImageAnalysisService
 
     private ImageAnalysisResponseDto MapToDto(ImageAnalysis analysis)
     {
+        var tags = analysis.Tags.Select(t => new AnalysisTagDto
+        {
+            Category = t.Category,
+            Name = t.Name,
+            Confidence = t.Confidence / 100m,
+            Severity = t.Severity
+        }).ToList();
+
+        var overallRiskScore = analysis.RiskScore;
+
         return new ImageAnalysisResponseDto
         {
-            Id = analysis.Id,
+            ImageId = analysis.Id,
+            Id = analysis.Id, // Legacy field
             FileName = analysis.FileName,
+            Status = "Completed",
+            AnalysisResult = new ImageAnalysisResultDto
+            {
+                OverallRiskScore = overallRiskScore,
+                Tags = tags
+            },
+            // Legacy fields
             FileSizeBytes = analysis.FileSizeBytes,
             RiskScore = analysis.RiskScore,
             Classification = analysis.Classification,
             AnalysisDetails = analysis.AnalysisDetails,
             ConfidenceScore = analysis.ConfidenceScore,
             AnalyzedAt = analysis.AnalyzedAt,
+            CreatedAt = analysis.CreatedAt,
             Categories = analysis.Categories
         };
     }

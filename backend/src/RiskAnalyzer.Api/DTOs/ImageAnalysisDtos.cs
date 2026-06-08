@@ -5,10 +5,10 @@ public class ImageAnalysisDetailDto
     public Guid Id { get; set; }
     public string FileName { get; set; } = null!;
     public long FileSizeBytes { get; set; }
-    public int RiskScore { get; set; }
+    public decimal RiskScore { get; set; }
     public string Classification { get; set; } = null!;
     public string AnalysisDetails { get; set; } = null!;
-    public int ConfidenceScore { get; set; }
+    public decimal ConfidenceScore { get; set; }
     public DateTime AnalyzedAt { get; set; }
     public List<AnalysisTagDto> Tags { get; set; } = new();
     public DateTime CreatedAt { get; set; }

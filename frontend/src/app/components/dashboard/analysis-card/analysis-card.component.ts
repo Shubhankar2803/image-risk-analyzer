@@ -29,4 +29,40 @@ export class AnalysisCardComponent {
       return [];
     }
   }
+
+  /**
+   * Determine risk level based on analysis data
+   */
+  getRiskLevel(): 'high' | 'medium' | 'safe' {
+    // Check classification first
+    const classification = this.analysis?.classification?.toLowerCase() || '';
+    if (classification.includes('high')) return 'high';
+    if (classification.includes('medium') || classification.includes('moderate')) return 'medium';
+    
+    // Fallback to risk score
+    const riskScore = this.analysis?.riskScore || 0;
+    if (riskScore >= 70) return 'high';
+    if (riskScore >= 40) return 'medium';
+    return 'safe';
+  }
+
+  /**
+   * Get the color class for the current risk level
+   */
+  getRiskColorClass(): string {
+    const level = this.getRiskLevel();
+    return `risk-${level}`;
+  }
+
+  /**
+   * Get risk display text
+   */
+  getRiskDisplayText(): string {
+    const level = this.getRiskLevel();
+    switch (level) {
+      case 'high': return 'HIGH RISK';
+      case 'medium': return 'MEDIUM RISK';
+      case 'safe': return 'SAFE';
+    }
+  }
 }
