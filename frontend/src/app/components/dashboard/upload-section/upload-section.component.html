@@ -1,45 +1,54 @@
 <section class="upload-section">
   <div class="section-header">
-    <h2>Upload Image for Analysis</h2>
-    <p class="section-desc">Drag and drop or click to upload your image</p>
+    <span class="section-eyebrow">Step 01</span>
+    <h2>Upload an image</h2>
+    <p class="section-desc">Drop a file below or click to browse. We'll scan it for privacy, safety, and content risks.</p>
   </div>
 
-  <div class="upload-area" 
+  <div class="upload-area"
     (click)="fileInput.click()"
     (drop)="onDrop($event)"
     (dragover)="dragOver = true"
     (dragleave)="dragOver = false"
     [class.drag-over]="dragOver">
-    
-    <input #fileInput type="file" 
-      accept="image/*" 
+
+    <input #fileInput type="file"
+      accept="image/*"
       (change)="onFileSelected($event)"
       hidden
     />
-    
+
     <div *ngIf="!selectedFile" class="upload-placeholder">
-      <div class="upload-icon">[ ]</div>
-      <p class="upload-main">Click to select or drag & drop</p>
-      <p class="upload-hint">Supported: JPG, PNG, GIF, WebP (Max 10MB)</p>
+      <div class="upload-icon">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <p class="upload-main">Click to select, or drag a file here</p>
+      <p class="upload-hint">JPG, PNG, GIF, WebP — up to 10MB</p>
     </div>
-    
+
     <div *ngIf="selectedFile" class="file-preview">
-      <div class="preview-icon">✓</div>
+      <div class="preview-icon">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M20 6L9 17l-5-5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
       <p class="file-name">{{ selectedFile.name }}</p>
       <p class="file-size">{{ (selectedFile.size / 1024 / 1024).toFixed(2) }} MB</p>
     </div>
   </div>
 
   <div class="button-group">
-    <button (click)="uploadImage()" 
+    <button (click)="uploadImage()"
       [disabled]="!selectedFile || uploading"
       class="btn btn-primary">
-      <span *ngIf="!uploading">Upload & Analyze</span>
+      <span *ngIf="!uploading">Analyze image</span>
       <span *ngIf="uploading" class="loading-spinner">
-        <span class="spinner"></span> Uploading...
+        <span class="spinner"></span> Analyzing…
       </span>
     </button>
-    <button (click)="clearFile()" 
+    <button (click)="clearFile()"
       [disabled]="!selectedFile || uploading"
       class="btn btn-secondary">
       Clear
@@ -48,10 +57,10 @@
 
   <div class="message-group">
     <p class="error-message" *ngIf="uploadError">
-      <span class="icon">!</span> {{ uploadError }}
+      <span class="msg-icon">!</span> {{ uploadError }}
     </p>
     <p class="success-message" *ngIf="uploadSuccess">
-      <span class="icon">✓</span> {{ uploadSuccess }}
+      <span class="msg-icon">✓</span> {{ uploadSuccess }}
     </p>
   </div>
 </section>

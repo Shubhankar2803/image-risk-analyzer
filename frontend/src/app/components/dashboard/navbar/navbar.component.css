@@ -1,17 +1,17 @@
 .navbar {
-  background: #000000;
-  color: #FFFFFF;
+  background: var(--ink);
+  color: var(--text-on-dark);
   padding: 18px 0;
-  border-bottom: 4px solid #FFD700;
   position: sticky;
   top: 0;
   z-index: 100;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .nav-container {
   max-width: 1400px;
   margin: 0 auto;
-  padding: 0 30px;
+  padding: 0 32px;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -21,21 +21,19 @@
 .nav-brand {
   display: flex;
   align-items: center;
-  gap: 12px;
   flex: 1;
 }
 
-.brand-icon {
-  font-size: 32px;
+.brand-mark {
+  font-family: var(--font-mono);
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  color: var(--text-on-dark);
 }
 
-.nav-brand h1 {
-  margin: 0;
-  font-size: 26px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 2px;
-  font-family: 'Courier New', monospace;
+.brand-mark-accent {
+  color: var(--signal);
 }
 
 .user-menu {
@@ -48,33 +46,33 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 500;
+  color: rgba(247, 248, 250, 0.7);
 }
 
-.greeting-icon {
-  font-size: 20px;
+.greeting-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--risk-safe);
+  flex-shrink: 0;
 }
 
 .logout-btn {
-  background: #FFFFFF;
-  color: #000000;
-  border: 3px solid #000000;
-  padding: 10px 18px;
-  border-radius: 0px;
+  background: transparent;
+  color: var(--text-on-dark);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  padding: 8px 16px;
+  border-radius: var(--radius-sm);
   cursor: pointer;
-  font-weight: 700;
-  transition: all 0.3s ease;
-  font-size: 14px;
-  font-family: 'Courier New', monospace;
-  text-transform: uppercase;
-  letter-spacing: 1px;
+  font-weight: 600;
+  transition: all 0.15s ease;
+  font-size: 13px;
+  font-family: var(--font-ui);
 }
 
 .logout-btn:hover {
-  background: #FFD700;
-  color: #000000;
-  border-color: #000000;
-  transform: translate(2px, 2px);
-  box-shadow: -2px -2px 0px #000000;
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.3);
 }

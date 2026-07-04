@@ -1,46 +1,51 @@
-<div class="analysis-card" [ngClass]="getRiskColorClass()">
+<div class="analysis-card" [ngClass]="getRiskColorClass()" (click)="navigateToDetail()" style="cursor: pointer;">
   <div class="card-header" [ngClass]="getRiskColorClass()">
     <div class="file-info-compact">
       <span class="file-icon">[IMG]</span>
       <span class="file-name-compact">{{ analysis.fileName }}</span>
     </div>
     <div class="risk-badge" [ngClass]="getRiskColorClass()">{{ getRiskDisplayText() }}</div>
-    <button (click)="deleteAnalysis()" class="btn-delete" title="Delete">×</button>
+    <button (click)="deleteAnalysis($event)" class="btn-delete" title="Delete">×</button>
   </div>
+
   <div class="card-body">
-    <div class="stats-grid">
-      <div class="stat-item">
-        <span class="stat-label">Risk Score</span>
-        <span class="stat-value" [ngClass]="'risk-score-' + getRiskLevel()">{{ analysis.riskScore }}/100</span>
+
+    <div class="scores-row">
+      <div class="score-item">
+        <span class="score-label">Risk</span>
+        <span class="score-value" [ngClass]="'risk-score-' + getRiskLevel()">
+          {{ (analysis.riskScore * 100) | number:'1.0-0' }}<span class="score-denom">/100</span>
+        </span>
       </div>
-      <div class="stat-item">
-        <span class="stat-label">Confidence</span>
-        <span class="stat-value">{{ analysis.confidenceScore }}%</span>
-      </div>
-    </div>
-    <div class="info-item">
-      <span class="label">Classification:</span>
-      <span class="value">{{ analysis.classification }}</span>
-    </div>
-    <div class="info-item">
-      <span class="label">Details:</span>
-      <span class="value">{{ analysis.analysisDetails }}</span>
-    </div>
-    
-    <div class="categories-section" *ngIf="analysis.categories">
-      <div class="categories-title">Risk Categories:</div>
-      <div class="categories-list">
-        <div class="category-item" *ngFor="let category of parseCategories(analysis.categories)" [class]="'risk-' + category.riskLevel.toLowerCase()">
-          <div class="category-name">{{ category.name }}</div>
-          <div class="category-risk" [class]="'level-' + category.riskLevel.toLowerCase()">{{ category.riskLevel }}</div>
-          <div class="category-evidence">{{ category.evidence }}</div>
-        </div>
+      <div class="score-divider"></div>
+      <div class="score-item">
+        <span class="score-label">Confidence</span>
+        <span class="score-value">
+          {{ (analysis.confidenceScore * 100) | number:'1.0-0' }}<span class="score-denom">%</span>
+        </span>
       </div>
     </div>
-    
-    <div class="info-item timestamp">
-      <span class="label">[DATE]</span>
-      <span class="value">{{ analysis.analyzedAt | date: 'short' }}</span>
+
+    <div class="tags-row" *ngIf="getTags().length > 0">
+      <span
+        class="tag-pill"
+        *ngFor="let tag of getTags().slice(0, 4)"
+        [ngClass]="'pill-' + tag.severity.toLowerCase()">
+        {{ tag.name }}
+      </span>
+      <span class="tag-pill pill-more" *ngIf="getTags().length > 4">
+        +{{ getTags().length - 4 }} more
+      </span>
     </div>
+
+    <div class="no-tags-row" *ngIf="getTags().length === 0">
+      [ No risk tags detected ]
+    </div>
+
+    <div class="card-footer">
+      <span class="footer-date">{{ analysis.analyzedAt | date: 'MMM d, y' }}</span>
+      <span class="footer-hint">Click to view details →</span>
+    </div>
+
   </div>
 </div>

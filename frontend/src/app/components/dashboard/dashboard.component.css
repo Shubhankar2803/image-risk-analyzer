@@ -1,18 +1,13 @@
-* {
-  font-family: 'Courier New', monospace;
-}
-
 .dashboard {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
-  background: #FFFFFF;
+  background: var(--surface);
 }
 
 .main-content {
   flex: 1;
-  padding: 40px 30px;
-  overflow-y: auto;
+  padding: 48px 32px;
 }
 
 .container {
@@ -22,6 +17,6 @@
 
 @media (max-width: 768px) {
   .main-content {
-    padding: 24px 16px;
+    padding: 28px 16px;
   }
 }

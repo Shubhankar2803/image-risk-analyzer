@@ -1,5 +1,6 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-analysis-card',
@@ -12,7 +13,14 @@ export class AnalysisCardComponent {
   @Input() analysis: any;
   @Output() deleteRequested = new EventEmitter<string>();
 
-  deleteAnalysis(): void {
+  constructor(private router: Router) {}
+
+  navigateToDetail(): void {
+    this.router.navigate(['/analysis', this.analysis.imageId || this.analysis.id]);
+  }
+
+  deleteAnalysis(event: MouseEvent): void {
+    event.stopPropagation();
     if (confirm('Are you sure you want to delete this analysis?')) {
       this.deleteRequested.emit(this.analysis.id);
     }
@@ -30,33 +38,25 @@ export class AnalysisCardComponent {
     }
   }
 
-  /**
-   * Determine risk level based on analysis data
-   */
+  getTags(): any[] {
+    return this.analysis?.analysisResult?.tags || [];
+  }
+
   getRiskLevel(): 'high' | 'medium' | 'safe' {
-    // Check classification first
     const classification = this.analysis?.classification?.toLowerCase() || '';
     if (classification.includes('high')) return 'high';
     if (classification.includes('medium') || classification.includes('moderate')) return 'medium';
-    
-    // Fallback to risk score
-    const riskScore = this.analysis?.riskScore || 0;
-    if (riskScore >= 70) return 'high';
-    if (riskScore >= 40) return 'medium';
+
+    const riskScore = this.analysis?.analysisResult?.overallRiskScore ?? this.analysis?.riskScore ?? 0;
+    if (riskScore >= 0.7) return 'high';
+    if (riskScore >= 0.4) return 'medium';
     return 'safe';
   }
 
-  /**
-   * Get the color class for the current risk level
-   */
   getRiskColorClass(): string {
-    const level = this.getRiskLevel();
-    return `risk-${level}`;
+    return `risk-${this.getRiskLevel()}`;
   }
 
-  /**
-   * Get risk display text
-   */
   getRiskDisplayText(): string {
     const level = this.getRiskLevel();
     switch (level) {

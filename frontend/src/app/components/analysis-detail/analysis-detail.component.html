@@ -1,0 +1,81 @@
+<div class="detail-page">
+
+  <!-- Toast -->
+  <div class="toast-container" *ngIf="toast" [ngClass]="'toast-' + toast.type">
+    {{ toast.message }}
+  </div>
+
+  <div *ngIf="loading" class="loading-state">
+    <span class="spinner"></span>
+    <p>Loading analysis...</p>
+  </div>
+
+  <div *ngIf="error" class="error-state">
+    <p>{{ error }}</p>
+    <button (click)="goBack()" class="btn-back">← Back to Dashboard</button>
+  </div>
+
+  <div *ngIf="!loading && !error && analysis" class="detail-content">
+
+    <div class="detail-header" [ngClass]="'risk-' + getRiskLevel()">
+      <button (click)="goBack()" class="btn-back">← Back</button>
+      <div class="header-info">
+        <span class="file-icon">[IMG]</span>
+        <span class="file-name">{{ analysis.fileName }}</span>
+      </div>
+      <div class="risk-badge" [ngClass]="'risk-' + getRiskLevel()">{{ getRiskDisplayText() }}</div>
+      <button (click)="deleteAnalysis()" class="btn-delete">× Delete</button>
+    </div>
+
+    <div class="detail-body">
+
+      <div class="stats-grid">
+        <div class="stat-item">
+          <span class="stat-label">Risk Score</span>
+          <span class="stat-value">{{ (analysis.riskScore * 100) | number:'1.0-0' }}/100</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-label">Confidence</span>
+          <span class="stat-value">{{ (analysis.confidenceScore * 100) | number:'1.0-0' }}%</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-label">File Size</span>
+          <span class="stat-value">{{ (analysis.fileSizeBytes / 1024).toFixed(1) }} KB</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-label">Analyzed</span>
+          <span class="stat-value">{{ analysis.analyzedAt | date: 'medium' }}</span>
+        </div>
+      </div>
+
+      <div class="info-block">
+        <div class="info-label">Classification</div>
+        <div class="info-value">{{ analysis.classification }}</div>
+      </div>
+
+      <div class="info-block">
+        <div class="info-label">Details</div>
+        <div class="info-value">{{ analysis.analysisDetails }}</div>
+      </div>
+
+      <div class="tags-section" *ngIf="getTags().length > 0">
+        <div class="section-title">Detected Tags</div>
+        <div class="tags-grid">
+          <div class="tag-item" *ngFor="let tag of getTags()" [ngClass]="'risk-' + tag.severity.toLowerCase()">
+            <div class="tag-name">{{ tag.name }}</div>
+            <div class="tag-category">{{ tag.category }}</div>
+            <div class="tag-meta">
+              <span class="tag-severity" [ngClass]="'level-' + tag.severity.toLowerCase()">{{ tag.severity }}</span>
+              <span class="tag-confidence">{{ (tag.confidence * 100) | number:'1.0-0' }}% confidence</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="empty-tags" *ngIf="getTags().length === 0">
+        <p>[ No specific risk tags detected ]</p>
+      </div>
+
+    </div>
+  </div>
+</div>

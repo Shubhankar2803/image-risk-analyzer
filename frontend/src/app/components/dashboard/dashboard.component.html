@@ -4,11 +4,10 @@
   <main class="main-content">
     <div class="container">
       <app-upload-section (uploadComplete)="onUploadComplete()"></app-upload-section>
-      <app-analysis-history 
+      <app-analysis-history
         [showHistory]="showAnalysisHistory"
         (toggleHistory)="toggleAnalysisHistory()">
       </app-analysis-history>
     </div>
   </main>
 </div>
-
