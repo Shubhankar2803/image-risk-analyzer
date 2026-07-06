@@ -1,0 +1,5 @@
+Refactor UI styles: move detail styles into component and modernize auth pages
+
+- Move detailed page styles out of global frontend/src/styles.css into frontend/src/app/components/analysis-detail/analysis-detail.component.css.
+- Restyle and modernize login and register components (layout, inputs, buttons, responsive tweaks).
+- Remove duplicated/minified detail CSS from frontend/src/styles.css.
