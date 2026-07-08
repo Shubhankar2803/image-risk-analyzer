@@ -11,4 +11,5 @@ public class User
     public DateTime? LastLoginAt { get; set; }
     public bool IsActive { get; set; } = true;
     public ICollection<ImageAnalysis> ImageAnalyses { get; set; } = new List<ImageAnalysis>();
+    public ICollection<RefreshToken> RefreshTokens { get; set; } = new List<RefreshToken>();
 }

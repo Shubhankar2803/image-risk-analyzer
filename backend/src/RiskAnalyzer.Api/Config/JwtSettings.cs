@@ -17,4 +17,9 @@ public class JwtSettings
     
     /// <summary>JWT audience claim</summary>
     public string Audience { get; set; } = null!;
+    
+    /// <summary>
+    /// Refresh token lifetime in days
+    /// </summary>
+    public int RefreshTokenExpirationDays { get; set; } = 7;
 }

@@ -20,6 +20,13 @@ public class AuthResponse
     public UserDto User { get; set; } = null!;
     public int ExpiresIn { get; set; }
     public string TokenType { get; set; } = "Bearer";
+    public string? RefreshToken { get; set; }
+    public int? RefreshExpiresIn { get; set; }
+}
+
+public class RefreshRequest
+{
+    public string RefreshToken { get; set; } = null!;
 }
 
 public class ApiError
