@@ -26,8 +26,6 @@ public class ApplicationDbContext : DbContext
     /// <summary>DbSet for AnalysisTags table</summary>
     public DbSet<AnalysisTag> AnalysisTags { get; set; } = null!;
     
-    /// <summary>DbSet for RefreshTokens table</summary>
-    public DbSet<RiskAnalyzer.Api.Models.RefreshToken> RefreshTokens { get; set; } = null!;
     
     /// <summary>
     /// Configure entity relationships and constraints
@@ -131,21 +129,6 @@ public class ApplicationDbContext : DbContext
             entity.HasIndex(e => e.ImageAnalysisId);
         });
 
-        // RefreshToken configuration
-        modelBuilder.Entity<RiskAnalyzer.Api.Models.RefreshToken>(entity =>
-        {
-            entity.HasKey(e => e.Id);
-            entity.Property(e => e.Token).IsRequired().HasMaxLength(2000);
-            entity.Property(e => e.CreatedAt).IsRequired();
-            entity.Property(e => e.ExpiresAt).IsRequired();
-
-            entity.HasOne(e => e.User)
-                .WithMany(u => u.RefreshTokens)
-                .HasForeignKey(e => e.UserId)
-                .OnDelete(DeleteBehavior.Cascade);
-
-            entity.HasIndex(e => e.Token).IsUnique();
-            entity.HasIndex(e => e.UserId);
-        });
+        // (Refresh tokens removed)
     }
 }

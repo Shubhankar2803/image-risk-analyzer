@@ -19,6 +19,8 @@ export class ApiService {
     return this.http.post(`${this.apiUrl}/auth/login`, data);
   }
 
+  // Refresh and logout endpoints removed (no refresh-token support)
+
   uploadImage(file: File): Observable<any> {
     const formData = new FormData();
     formData.append('file', file);

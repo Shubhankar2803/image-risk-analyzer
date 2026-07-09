@@ -3,6 +3,10 @@ import { BehaviorSubject, Observable } from 'rxjs';
 import { tap } from 'rxjs/operators';
 import { ApiService } from './api.service';
 
+interface TokenResponse {
+  token: string;
+}
+
 @Injectable({
   providedIn: 'root'
 })

@@ -5,6 +5,7 @@ namespace RiskAnalyzer.Api.Services;
 using RiskAnalyzer.Api.Data;
 using RiskAnalyzer.Api.DTOs;
 using RiskAnalyzer.Api.Models;
+using RiskAnalyzer.Api.Repositories;
 using RiskAnalyzer.Api.Config;
 using Microsoft.EntityFrameworkCore;
 using System.Text.Json;
@@ -23,20 +24,23 @@ public interface IImageAnalysisService
 
 public class ImageAnalysisService : IImageAnalysisService
 {
-    private readonly ApplicationDbContext _context;
+    private readonly IImageAnalysisRepository _repo;
+    private readonly IUserRepository _userRepo;
     private readonly ILogger<ImageAnalysisService> _logger;
     private readonly IConfiguration _configuration;
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly GeminiSettings _geminiSettings;
 
     public ImageAnalysisService(
-        ApplicationDbContext context, 
-        ILogger<ImageAnalysisService> logger, 
+        IImageAnalysisRepository repo,
+        IUserRepository userRepo,
+        ILogger<ImageAnalysisService> logger,
         IConfiguration configuration,
         IHttpClientFactory httpClientFactory,
         GeminiSettings geminiSettings)
     {
-        _context = context;
+        _repo = repo;
+        _userRepo = userRepo;
         _logger = logger;
         _configuration = configuration;
         _httpClientFactory = httpClientFactory;
@@ -48,7 +52,7 @@ public class ImageAnalysisService : IImageAnalysisService
         try
         {
             // Validate user exists
-            var user = await _context.Users.FindAsync(userId);
+            var user = await _userRepo.GetUserByIdAsync(userId);
             if (user == null)
             {
                 _logger.LogWarning("User {UserId} not found", userId);
@@ -128,8 +132,7 @@ public class ImageAnalysisService : IImageAnalysisService
                 }
             }
 
-            _context.ImageAnalyses.Add(analysis);
-            await _context.SaveChangesAsync();
+            await _repo.AddAsync(analysis);
 
             _logger.LogInformation("Image analysis created: {AnalysisId} with {TagCount} tags", analysis.Id, analysis.Tags.Count);
 
@@ -425,12 +428,7 @@ public class ImageAnalysisService : IImageAnalysisService
     {
         try
         {
-            var analyses = await _context.ImageAnalyses
-                .Where(a => a.UserId == userId)
-                .Include(a => a.Tags)
-                .OrderByDescending(a => a.CreatedAt)
-                .ToListAsync();
-
+            var analyses = await _repo.GetByUserIdAsync(userId);
             return analyses.Select(MapToDto).ToList();
         }
         catch (Exception ex)
@@ -444,11 +442,9 @@ public class ImageAnalysisService : IImageAnalysisService
     {
         try
         {
-            var analysis = await _context.ImageAnalyses
-                .Include(a => a.Tags)
-                .FirstOrDefaultAsync(a => a.Id == analysisId && a.UserId == userId);
-
-            return analysis != null ? MapToDto(analysis) : null;
+            var analysis = await _repo.GetByIdAsync(analysisId);
+            if (analysis == null || analysis.UserId != userId) return null;
+            return MapToDto(analysis);
         }
         catch (Exception ex)
         {
@@ -461,20 +457,12 @@ public class ImageAnalysisService : IImageAnalysisService
     {
         try
         {
-            var analysis = await _context.ImageAnalyses
-                .FirstOrDefaultAsync(a => a.Id == analysisId && a.UserId == userId);
+            var analysis = await _repo.GetByIdAsync(analysisId);
+            if (analysis == null || analysis.UserId != userId) return false;
 
-            if (analysis == null)
-                return false;
+            if (File.Exists(analysis.FilePath)) File.Delete(analysis.FilePath);
 
-            // Delete physical file if exists
-            if (File.Exists(analysis.FilePath))
-            {
-                File.Delete(analysis.FilePath);
-            }
-
-            _context.ImageAnalyses.Remove(analysis);
-            await _context.SaveChangesAsync();
+            await _repo.DeleteAsync(analysis);
 
             _logger.LogInformation("Analysis deleted: {AnalysisId}", analysisId);
             return true;

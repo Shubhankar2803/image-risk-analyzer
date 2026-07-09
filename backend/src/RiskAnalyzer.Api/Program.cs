@@ -37,6 +37,7 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 // ==================== DEPENDENCY INJECTION ====================
 // Register repositories
 builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<IImageAnalysisRepository, ImageAnalysisRepository>();
 
 // Register services
 builder.Services.AddScoped<IUserService, UserService>();
